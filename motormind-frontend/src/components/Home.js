@@ -7,12 +7,11 @@ import useStyles from '../assests/useStyles';
 
 function Home() {
     const classes = useStyles();
-    const [value, setValue] = useState(0);
-    const [showPSOEValue, setShowPSOEValue] = useState(false);
+    const [voltage, setVoltage] = useState('');
+    const [psoeValue, setPsoeValue] = useState(null);
 
     const handlePredictPSOE = () => {
-        setValue(1.2345);
-        setShowPSOEValue(true);
+        setPsoeValue(1.2345); // Example value
     };
 
     return (
@@ -61,12 +60,12 @@ function Home() {
                             Click to Predict PSOE
                         </Button>
                     </Grid>
-                    {showPSOEValue && (
+                    {psoeValue !== null && (
                         <Grid item xs={11} md={2}>
                             <InputBase
                                 className={classes.psoeGrid}
                                 type="text"
-                                value={`PSOE Value: ${value}`}
+                                value={`PSOE Value: ${psoeValue}`}
                                 placeholder="Enter Voltage"
                                 readOnly
                             />
