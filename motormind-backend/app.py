@@ -1,33 +1,35 @@
-from flask import Flask, jsonify
-import os
-import h5py  # For reading MATLAB v7.3 files
+import h5py
+import numpy as np
+import pandas as pd
 
-app = Flask(__name__)
+# Load psoe.mat
+psoe_file = h5py.File('psoe.mat', 'r')
+psoe_data = psoe_file['psoe'][:]  # Assuming 'psoe' is the key
+time_psoe = psoe_data[0, :]  # First row is time
+angle = psoe_data[1, :]  # Second row is angle
 
-@app.route('/')
-def home():
-    return '<h1>Welcome to the .MAT File Viewer</h1><p>Visit <a href="/view-mat">/view-mat</a> to view the .mat file contents.</p>'
+# Load Vq.mat
+vd_file = h5py.File('Vd.mat', 'r')
+vd_data = vd_file['Vd'][:]  # Assuming 'Vq' is the key
+time_vd = vd_data[0, :]  # First row is time
+voltage = vd_data[1, :]  # Second row is voltage
 
-@app.route('/view-mat', methods=['GET'])
-def view_mat():
-    # Specify the .mat file path
-    mat_file_path = os.path.join(os.path.dirname(__file__), 'psoe.mat')
+# Print time arrays for inspection
+print("Time (PSOE):", time_psoe)
+print("Time (Vq):", time_vd)
 
-    # Check if the file exists
-    if not os.path.exists(mat_file_path):
-        return jsonify({'error': 'File not found'}), 404
+# Verify if time arrays match
+if not np.array_equal(time_psoe, time_vd):
+    raise ValueError("Time arrays in the two files do not match!")
 
-    try:
-        # Open the MATLAB v7.3 file
-        with h5py.File(mat_file_path, 'r') as mat_file:
-            # Extract keys and their datasets
-            mat_data = {}
-            for key in mat_file.keys():
-                mat_data[key] = mat_file[key][:].tolist()  # Convert to list for JSON serialization
+# Create a combined DataFrame
+data = {
+    'Time (s)': time_psoe,
+    'PSOE Angle': angle,
+    'Voltage (Vd)': voltage
+}
+df = pd.DataFrame(data)
 
-        return jsonify(mat_data), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True)
+# Save the combined data to a CSV file for inspection
+df.to_csv('combined_data.csv', index=False)
+print("Combined data saved to 'combined_data.csv'")
