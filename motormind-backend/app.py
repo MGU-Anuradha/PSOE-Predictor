@@ -3,20 +3,16 @@ import numpy as np
 import pandas as pd
 
 # Load psoe.mat
-psoe_file = h5py.File('psoe.mat', 'r')
-psoe_data = psoe_file['psoe'][:]  # Assuming 'psoe' is the key
-time_psoe = psoe_data[0, :]  # First row is time
-angle = psoe_data[1, :]  # Second row is angle
+with h5py.File('psoe.mat', 'r') as psoe_file:
+    psoe_data = psoe_file['psoe'][:]  # Extract the dataset
+    time_psoe = psoe_data[:, 0]  # First column is time
+    angle = psoe_data[:, 1]      # Second column is angle
 
-# Load Vq.mat
-vd_file = h5py.File('Vd.mat', 'r')
-vd_data = vd_file['Vd'][:]  # Assuming 'Vq' is the key
-time_vd = vd_data[0, :]  # First row is time
-voltage = vd_data[1, :]  # Second row is voltage
-
-# Print time arrays for inspection
-print("Time (PSOE):", time_psoe)
-print("Time (Vq):", time_vd)
+# Load Vd.mat
+with h5py.File('Vd.mat', 'r') as vd_file:
+    vd_data = vd_file['Vd'][:]  # Extract the dataset
+    time_vd = vd_data[:, 0]     # First column is time
+    voltage = vd_data[:, 1]     # Second column is voltage
 
 # Verify if time arrays match
 if not np.array_equal(time_psoe, time_vd):
@@ -33,3 +29,7 @@ df = pd.DataFrame(data)
 # Save the combined data to a CSV file for inspection
 df.to_csv('combined_data.csv', index=False)
 print("Combined data saved to 'combined_data.csv'")
+
+# Inspect the first few rows
+print("Preview of combined data:")
+print(df.head())
